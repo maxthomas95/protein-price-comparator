@@ -6,6 +6,8 @@ Zero dependencies. Runs from any static web server or in Docker/Portainer with N
 I’ve always wanted an easy way to compare which proteins are cheaper.
 Sure, not all proteins are equal (something to explore in the future), but for now I wanted a simple, visual way to line up foods and powders side by side and see the cost per gram of protein — and especially what 30g of protein actually costs across different sources.
 
+<img width="1210" height="422" alt="image" src="https://github.com/user-attachments/assets/1a693d55-f1bb-4c93-81dd-353b4ee66dd7" />
+
 ---
 
 ## ✨ Features (MVP)
