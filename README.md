@@ -16,7 +16,7 @@ Sure, not all proteins are equal (something to explore in the future), but for n
   - Per 100 g (e.g. 31 g / 100 g)
   - Per serving (e.g. 25 g in a 32 g scoop)
 - Instant calculations:
-  - $/g & $/30g
+  - $/g and $/30g
 - Sort, search, and ⭐ favorites
 - Settings: currency symbol and default target (30g)
 - Data saved in LocalStorage (no backend)
