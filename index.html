@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protein Price Comparator</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Raleway:wght@500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container header-content">
+      <h1 class="header-title">Protein Price Comparator</h1>
+      <div class="header-actions">
+        <button id="add-item-btn" class="btn-primary">Add Item</button>
+        <button id="settings-btn" class="btn-secondary">Settings</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Controls -->
+    <section class="controls">
+      <div class="search-container">
+        <svg class="icon"><use href="assets/icons.svg#search"></use></svg>
+        <input type="search" id="search-input" placeholder="Search by name, brand, or store...">
+      </div>
+      
+      <div class="favorites-container">
+        <input type="checkbox" id="favorites-only" name="favorites-only">
+        <label for="favorites-only">Favorites only</label>
+      </div>
+      
+      <div class="sort-container">
+        <label for="sort-select">Sort by:</label>
+        <select id="sort-select" name="sort">
+          <option value="costPerTarget">$ / 30g</option>
+          <option value="costPerGram">$ / g</option>
+          <option value="priceEffective">Price</option>
+          <option value="name">Name</option>
+          <option value="brand">Brand</option>
+          <option value="store">Store</option>
+        </select>
+      </div>
+      
+      <button id="sort-dir-btn" class="btn-secondary" title="Ascending">↑</button>
+    </section>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-favorite">★</th>
+            <th class="col-name" data-sort="name">Name</th>
+            <th class="col-price" data-sort="priceEffective">Price</th>
+            <th class="col-protein">Protein</th>
+            <th class="col-cost-per-g" data-sort="costPerGram">$ / g</th>
+            <th class="col-cost-per-target" data-sort="costPerTarget">$ / 30g</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="items-table-body">
+          <!-- Table rows will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state hidden">
+      <svg class="icon"><use href="assets/icons.svg#search"></use></svg>
+      <h2>No items found</h2>
+      <p>Add your first item or adjust your search filters</p>
+      <button class="btn-primary" id="empty-add-btn">Add Item</button>
+    </div>
+  </main>
+
+  <!-- Item Dialog -->
+  <dialog id="item-dialog">
+    <div class="dialog-header">
+      <h2>Add Item</h2>
+      <button class="dialog-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    
+    <form id="item-form">
+      <div class="dialog-body">
+        <!-- Basic Info -->
+        <div class="form-group">
+          <label for="item-name">Name *</label>
+          <input type="text" id="item-name" name="name" required>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-col">
+            <label for="item-brand">Brand</label>
+            <input type="text" id="item-brand" name="brand">
+          </div>
+          <div class="form-col">
+            <label for="item-store">Store</label>
+            <input type="text" id="item-store" name="store">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="radio-option">
+            <input type="checkbox" id="item-favorite" name="favorite">
+            <label for="item-favorite">Favorite</label>
+          </div>
+        </div>
+        
+        <!-- Price Mode -->
+        <div class="form-group">
+          <h3>Price Information</h3>
+          
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="price-mode-unit" name="priceMode" value="unitPrice" checked>
+              <label for="price-mode-unit">Unit Price</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="price-mode-total" name="priceMode" value="totalPrice">
+              <label for="price-mode-total">Total Price</label>
+            </div>
+          </div>
+          
+          <!-- Unit Price Fields -->
+          <div class="unit-price-fields">
+            <div class="form-row">
+              <div class="form-col">
+                <label for="unit-price">Price per Unit *</label>
+                <input type="number" id="unit-price" name="unitPrice" step="0.01" min="0">
+              </div>
+              <div class="form-col">
+                <label for="unit-price-unit">Unit *</label>
+                <select id="unit-price-unit" name="unitPriceUnit">
+                  <option value="g">g</option>
+                  <option value="kg">kg</option>
+                  <option value="oz">oz</option>
+                  <option value="lb" selected>lb</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Total Price Fields -->
+          <div class="total-price-fields hidden">
+            <div class="form-row">
+              <div class="form-col">
+                <label for="price-total">Total Price *</label>
+                <input type="number" id="price-total" name="priceTotal" step="0.01" min="0">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-col">
+                <label for="package-amount">Package Amount *</label>
+                <input type="number" id="package-amount" name="packageAmount" step="0.01" min="0">
+              </div>
+              <div class="form-col">
+                <label for="package-unit">Unit *</label>
+                <select id="package-unit" name="packageUnit">
+                  <option value="g">g</option>
+                  <option value="kg">kg</option>
+                  <option value="oz">oz</option>
+                  <option value="lb" selected>lb</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Protein Basis -->
+        <div class="form-group">
+          <h3>Protein Information</h3>
+          
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="protein-basis-per100g" name="proteinBasis" value="per100g" checked>
+              <label for="protein-basis-per100g">Per 100g</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="protein-basis-perServing" name="proteinBasis" value="perServing">
+              <label for="protein-basis-perServing">Per Serving</label>
+            </div>
+          </div>
+          
+          <!-- Per 100g Fields -->
+          <div class="per100g-fields">
+            <div class="form-group">
+              <label for="protein-per-100g">Protein per 100g (g) *</label>
+              <input type="number" id="protein-per-100g" name="proteinPer100g" step="0.1" min="0">
+            </div>
+          </div>
+          
+          <!-- Per Serving Fields -->
+          <div class="perServing-fields hidden">
+            <div class="form-row">
+              <div class="form-col">
+                <label for="serving-size-amount">Serving Size *</label>
+                <input type="number" id="serving-size-amount" name="servingSizeAmount" step="0.1" min="0">
+              </div>
+              <div class="form-col">
+                <label for="serving-size-unit">Unit *</label>
+                <select id="serving-size-unit" name="servingSizeUnit">
+                  <option value="g" selected>g</option>
+                  <option value="kg">kg</option>
+                  <option value="oz">oz</option>
+                  <option value="lb">lb</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="protein-per-serving">Protein per Serving (g) *</label>
+              <input type="number" id="protein-per-serving" name="proteinPerServing" step="0.1" min="0">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Live Preview -->
+        <div class="preview-box">
+          <h3>Cost Preview</h3>
+          <div>
+            <span>Cost per gram of protein: </span>
+            <span class="preview-value preview-cost-per-gram">—</span>
+          </div>
+          <div>
+            <span>Cost per 30g of protein: </span>
+            <span class="preview-value preview-cost-per-target">—</span>
+          </div>
+          <div class="preview-invalid hidden"></div>
+        </div>
+      </div>
+      
+      <div class="dialog-footer">
+        <button type="button" class="btn-secondary dialog-cancel">Cancel</button>
+        <button type="submit" class="btn-primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Settings Dialog -->
+  <dialog id="settings-dialog">
+    <div class="dialog-header">
+      <h2>Settings</h2>
+      <button class="dialog-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    
+    <form id="settings-form">
+      <div class="dialog-body">
+        <div class="form-group">
+          <label for="currency-symbol">Currency Symbol</label>
+          <input type="text" id="currency-symbol" name="currencySymbol" value="$" maxlength="3">
+        </div>
+        
+        <div class="form-group">
+          <label for="target-grams">Target Grams of Protein</label>
+          <input type="number" id="target-grams" name="targetGrams" value="30" min="1" step="1">
+        </div>
+      </div>
+      
+      <div class="dialog-footer">
+        <button type="button" class="btn-secondary dialog-cancel">Cancel</button>
+        <button type="submit" class="btn-primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Scripts -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

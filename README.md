@@ -1,115 +1,113 @@
-# 🥩 Protein Price Comparator
+# Protein Price Comparator
 
-A simple, mobile-friendly web app for comparing foods and powders by **cost per gram of protein** and **$/30g** of protein.  
-Use it to see whether Costco chicken, Greek yogurt, or your favorite protein powder gives you the best bang for your buck.
+A single-page, mobile-friendly web app to compare foods/powders by cost per gram of protein and $/30g. Built with vanilla HTML, CSS, and JavaScript with LocalStorage for persistence.
 
----
+## Features
 
-## ✨ Features (MVP)
+- Compare food items by protein cost ($/g and $/30g)
+- Two pricing modes: unit price or total package price
+- Two protein basis modes: per 100g or per serving
+- Sort by various metrics (cost, name, brand, store)
+- Filter by search or favorites
+- Persistent storage using LocalStorage
+- Mobile-friendly responsive design
+- Dark theme matching the reference site
 
-- **Add any item** with:
-  - Unit price (e.g. $2.49 / lb)
-  - Total price + package (e.g. $39.99 for 5 lb)
-- **Protein basis**:
-  - Per 100 g (e.g. `31 g protein / 100 g`)
-  - Per serving (e.g. `25 g protein in a 32 g scoop`)
-- **Automatic calculations**:
-  - Cost per gram of protein
-  - Cost per 30 g protein (default view)
-- **Comparison table**:
-  - Sortable by price per gram, per 30g, total price, name, brand, or store
-  - Quick search filter
-  - ⭐ Favorites
-- **Settings**:
-  - Change currency symbol (default: `$`)
-- **Persistence**: Items are saved in your browser (LocalStorage)
-- **Demo data** loads on first run (chicken breast, whey isolate, Greek yogurt)
+## Setup and Run
 
----
+No build step required! Simply serve the files with any static server:
 
-## 📦 Project Structure
-    index.html
-    css/
-      styles.css
-    js/
-      app.js       # app logic, event wiring, rendering
-      calc.js      # pure cost/yield calculations
-      storage.js   # LocalStorage + first-run seed
-      dom.js       # small DOM helpers
-      format.js    # money/unit formatting
-    assets/
-      icons.svg
-    reference/
-      max-thomas.com/   # (read-only) design reference, DO NOT MODIFY
+```bash
+# Using Python
+python -m http.server
 
-> The reference/max-thomas.com/ folder is design reference only.  
-> The app reads its tokens (font/colors) but never edits those files.
+# Or using VS Code Live Server extension
+# Right-click on index.html and select "Open with Live Server"
+```
 
----
+## File Structure
 
-## 🧮 How the math works
+- `index.html` - Main HTML file with the application structure
+- `/css/styles.css` - Stylesheet with design tokens and styles
+- `/js/app.js` - Main application logic (state, render, event handlers)
+- `/js/calc.js` - Pure calculation utilities for conversions and derived values
+- `/js/format.js` - Formatting utilities for money and units
+- `/js/storage.js` - LocalStorage operations (load, save, seed)
+- `/js/dom.js` - DOM helper functions
+- `/assets/icons.svg` - SVG icons for the application
 
-**Conversions**
-- 1 lb = 453.592 g  
-- 1 oz = 28.3495 g  
-- 1 kg = 1000 g  
+## Calculation Formulas
 
-**Unit-price mode**
-    unitPricePerGramProduct = unitPrice / gramsIn(1 unitPriceUnit)
-    gramsProteinPerGramProduct =
-      - per100g: proteinPer100g / 100
-      - perServing: proteinPerServing / servingGrams
-    costPerGram = unitPricePerGramProduct / gramsProteinPerGramProduct
-    costPer30   = costPerGram * 30
+### Unit Conversions
+- 1 lb = 453.592 g
+- 1 oz = 28.3495 g
+- 1 kg = 1000 g
 
-**Total-price mode**
-    gramsTotal = gramsIn(packageAmount, packageUnit)
-    gramsProteinTotal =
-      - per100g: gramsTotal * (proteinPer100g / 100)
-      - perServing: (gramsTotal / servingGrams) * proteinPerServing
-    costPerGram = priceTotal / gramsProteinTotal
-    costPer30   = costPerGram * 30
+### Unit Price Mode
+- Unit price per gram of product = unitPrice / gramsIn(1, unitPriceUnit)
+- Protein density:
+  - per100g → gramsProteinPerGramProduct = proteinPer100g / 100
+  - perServing → gramsProteinPerGramProduct = proteinPerServing / servingGrams
+- Cost per gram of protein = unitPricePerGramProduct / gramsProteinPerGramProduct
+- Cost per 30g of protein = costPerGram * 30
 
----
+### Total Price Mode
+- Total grams = gramsIn(packageAmount, packageUnit)
+- Protein total:
+  - per100g → gramsProteinTotal = gramsTotal * (proteinPer100g / 100)
+  - perServing → servings = gramsTotal / servingGrams; gramsProteinTotal = servings * proteinPerServing
+- Cost per gram of protein = priceTotal / gramsProteinTotal
+- Cost per 30g of protein = costPerGram * 30
 
-## 🚀 Getting Started
+## Data Model
 
-Use any static server (no build step required).
+```javascript
+// UnitMass: 'g' | 'kg' | 'oz' | 'lb'
+const Item = {
+  id: 'uuid',
+  name: 'Chicken breast',
+  brand: 'Kirkland',       // optional
+  store: 'Costco',         // optional
+  favorite: false,
+    
+  // Pricing mode
+  priceMode: 'unitPrice' | 'totalPrice',
+    
+  // Mode A (total price + package)
+  priceTotal: 39.99,
+  packageAmount: 5,
+  packageUnit: 'lb',
+    
+  // Mode B (unit price)
+  unitPrice: 2.49,
+  unitPriceUnit: 'lb',
+    
+  // Protein basis
+  proteinBasis: 'per100g' | 'perServing',
+  proteinPer100g: 31,      // if per100g
+  servingSizeAmount: 32,   // if perServing
+  servingSizeUnit: 'g',    // UnitMass
+  proteinPerServing: 25    // if perServing
+};
+```
 
-**Option A: VS Code Live Server**
-1. Install the “Live Server” extension.
-2. Right-click index.html → “Open with Live Server”.
+## Example Calculations
 
-**Option B: Python**
-    python -m http.server 5173
-Then open http://localhost:5173 in your browser.
+1. Chicken breast (Unit price mode)
+   - $2.49/lb & 31 g/100 g
+   - $/g ≈ 0.0177
+   - $/30g ≈ 0.5312
 
----
+2. Whey isolate (Total price mode)
+   - $39.99 for 5 lb & 25 g / 32 g serving
+   - $/g ≈ 0.0226
+   - $/30g ≈ 0.6771
 
-## ✅ Acceptance Tests
+## Accessibility Features
 
-- **Chicken breast**: `$2.49/lb` + `31 g / 100 g` → ≈ `$0.0177 / g` → ≈ `$0.53 / 30g`
-- **Whey isolate**: `$39.99 for 5 lb` + `25 g / 32 g serving` → ≈ `$0.0226 / g` → ≈ `$0.68 / 30g`
-- **Sorting**: Chicken shows before whey when sorted by cheapest $/30g
-- **Validation**: Empty or zero inputs are blocked
-
----
-
-## 🛠️ Roadmap (post‑MVP)
-
-- Import/export JSON of items  
-- Barcode scanning (webcam or mobile)  
-- USDA FoodData Central API integration  
-- Cooked yield adjustments for meats  
-- Calories & protein quality (PDCAAS/DIAAS)  
-- Price tracking over time  
-
----
-
-## 📜 License
-MIT — feel free to fork, modify, and share.
-
----
-
-### 🥗 Example Use
-Add chicken breast from Costco and whey isolate from Amazon. The app will instantly tell you which one is cheaper per 30 g of protein. Spoiler: chicken usually wins 🐓💪.
+- Semantic HTML structure
+- ARIA attributes for sorting
+- Keyboard navigation support
+- Focus management in dialogs
+- Adequate color contrast
+- Responsive design for all screen sizes
