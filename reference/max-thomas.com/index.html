@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Raleway:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <meta charset="UTF-8">
+    <title>Max Thomas | Personal Website</title>
+    <meta name="description" content="Max Thomas is an Infrastructure Engineer and automation expert sharing hybrid cloud projects, homelab setups, AI assistants, and technical insights." />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    
+</head>
+<body>
+
+<header>
+    <h1>Max Thomas</h1>
+    <nav>
+        <a href="#about">About</a>
+        <a href="#work">Work</a>
+        <a href="#homelab">Homelab</a>
+        <a href="#blog">Blog</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    <button id="darkModeToggle">🌙 Dark Mode</button>
+</header>
+
+<main>
+    <section id="about">
+        <h2>About Me</h2>
+            <p>Hi, I’m Max — an Infrastructure Engineer, automation enthusiast, and relentless problem solver based in Madison, WI.</p>
+            <p>By day, I specialize in designing hybrid cloud architectures, automating infrastructure with tools like <strong>Terraform</strong>, <strong>Ansible</strong>, <strong>Kubernetes</strong>, and driving large-scale <strong>Cisco</strong> and <strong>Meraki</strong> network automation (including deep <strong>API integrations</strong>). I’m passionate about making complex systems approachable — whether it’s building scalable solutions, refining automation pipelines, or sharing knowledge to help others level up.</p>
+            <p>Outside of work, you’ll find me deep in my homelab, developing AI-driven side projects like <strong>Roy</strong> (an experimental AI life simulator) and <strong>Jarvis</strong> (my custom home assistant), or even crafting <strong>Skyrim mods</strong> that push the game’s boundaries. I’m endlessly curious — always eager to explore new technologies, prototype creative ideas, and blend automation with innovation wherever I can.</p>
+            <p>When I’m not immersed in tech, you’ll catch me racing my car, gaming, diving into <strong>DIY projects</strong>, or hunting for the next great coffee spot.</p>
+    </section>
+
+    <section id="work">
+        <h2>My Work</h2>
+        <ul>
+            <li><a href="https://github.com/maxthomas95" target="_blank">GitHub Projects</a> — Explore my full range of code projects, from experiments and prototypes to production-ready tools across automation, infrastructure, and AI.</li>
+            <li><a href="https://wiki.max-thomas.com" target="_blank">My Wiki</a> — Dive into detailed walkthroughs, technical guides, architecture diagrams, and lessons learned from my projects and homelab experiments.</li>
+            <li><strong>Portfolio (below)</strong> — See a curated selection of the projects I’m most proud of, with focused summaries, key outcomes, and live links.</li>
+        </ul>
+    </section>
+
+
+    <section id="portfolio">
+        <h2>Portfolio</h2>
+        <div class="portfolio-grid">
+            <div class="portfolio-card">
+                <h3>Work-Cisco: Automation Toolkit</h3>
+                <div class="tags">
+                    <span class="tag">Python</span>
+                    <span class="tag">Terraform</span>
+                    <span class="tag">Ansible</span>
+                    <span class="tag">Cisco</span>
+                    <span class="tag">Meraki</span>
+                </div>
+                <p>A unified automation toolkit supporting both Cisco on-prem infrastructure and Meraki cloud networks. Combines Python scripts, Terraform, and Ansible to streamline device management, configuration, and BGP peering setup across hybrid environments.</p>
+                <a href="https://github.com/maxthomas95/work-network" target="_blank">View on GitHub</a>
+            </div>
+
+            <div class="portfolio-card">
+                <h3>Jarvis AI Assistant</h3>
+                <div class="tags">
+                    <span class="tag">AI</span>
+                    <span class="tag">Voice Control</span>
+                    <span class="tag">Smart Home</span>
+                </div>
+                <p>A voice-activated Python assistant that integrates GPT and ElevenLabs TTS to control Home Assistant, Proxmox, and other smart home systems. Designed for natural voice interaction and automation.</p>
+                <a href="https://github.com/maxthomas95/homelab-jarvis" target="_blank">View on GitHub</a>
+            </div>
+
+            <div class="portfolio-card">
+                <h3>Roy: AI Life Simulator</h3>
+                <div class="tags">
+                    <span class="tag">AI</span>
+                    <span class="tag">Game Development</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">Narrative Systems</span>
+                </div>
+                <p>Roy is an experimental AI-driven life simulator inspired by the Rick and Morty “Roy” arcade game. Combining large language models, dynamic memory, and multi-agent systems, it aims to create emergent, replayable life paths where no two playthroughs are the same.</p>
+                <p><em>Coming soon — stay tuned for project updates!</em></p>
+            </div>
+
+
+
+        </div>
+    </section>
+
+    <section id="homelab">
+        <h2>Homelab</h2>
+        <p>My homelab is the backbone of my learning and experimentation. I run Proxmox clusters, TrueNAS storage, Kubernetes (RKE2), Docker stacks, and a mix of automation tools across on-prem and cloud environments. It’s where I break things safely, test new ideas, and build personal projects ranging from AI assistants to smart home integrations.</p>
+        <p>Current setup highlights:</p>
+        <ul>
+            <li>Proxmox VE + Backup Server</li>
+            <li>TrueNAS Scale (iSCSI + ZFS)</li>
+            <li>Kubernetes (Rancher, RKE2) clusters</li>
+            <li>Home Assistant for smart home control</li>
+            <li>Self-hosted services: Wiki.js, Git, Jellyfin, and more</li>
+            <li>You can find the full list on <a href="https://wiki.max-thomas.com" target="_blank">my Wiki!</a></li>
+        </ul>
+    </section>
+
+    <section id="links">
+        <h2>All My Links</h2>
+        <p>Want to explore everything I’m working on? Check out my full Linkstack below — it’s a one-stop hub for my GitHub, Wiki, LinkedIn, projects, and more.</p>
+        <p><a href="https://links.max-thomas.com" target="_blank" class="linkstack-button">
+            Visit My Linkstack
+        </a></p>
+    </section>
+
+    <section id="blog">
+        <h2>Blog</h2>
+        <p>I’m planning to share blog posts on topics like:</p>
+        <ul>
+            <li>Infrastructure automation best practices</li>
+            <li>Homelab builds and upgrade logs</li>
+            <li>Lessons from cloud + hybrid architecture</li>
+            <li>AI tools and how I’m integrating them into personal + professional projects</li>
+            <li>Career tips for IT engineers and architects</li>
+        </ul>
+        <p>Stay tuned! First posts launching soon.</p>
+    </section>
+
+    <section id="contact">
+        <h2>Contact</h2>
+        <ul>
+            <li>Email: <a href="mailto:maxthomas1995@gmail.com">
+                <i class="fas fa-envelope"></i> me@max-thomas.com
+            </a></li>
+            <li><a href="https://github.com/maxthomas95" target="_blank">
+                <i class="fab fa-github"></i> GitHub
+            </a></li>
+            <li><a href="https://www.linkedin.com/in/max-thomas-9a1452b0/" target="_blank">
+                <i class="fab fa-linkedin"></i> LinkedIn
+            </a></li>
+        </ul>
+        <p>Want to collaborate, connect, or just geek out about tech? Shoot me a message!</p>
+    </section>
+
+</main>
+
+<footer>
+    <p>&copy; 2025 Max Thomas | All rights reserved</p>
+    <p>Built with 💻, ☕, and a dash of homelab chaos.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
