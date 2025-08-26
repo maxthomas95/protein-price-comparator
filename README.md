@@ -1,6 +1,6 @@
 # 🥩 Protein Price Comparator
 
-A simple, mobile-friendly web app for comparing foods and powders by **cost per gram of protein** and **$/25g or $/30g** of protein.  
+A simple, mobile-friendly web app for comparing foods and powders by **cost per gram of protein** and **$/30g** of protein.  
 Use it to see whether Costco chicken, Greek yogurt, or your favorite protein powder gives you the best bang for your buck.
 
 ---
@@ -8,24 +8,42 @@ Use it to see whether Costco chicken, Greek yogurt, or your favorite protein pow
 ## ✨ Features (MVP)
 
 - **Add any item** with:
-  - **Total price** + package size (e.g. `$9.99 for 2 lb`)
-  - **or** **Unit price** (e.g. `$2.49 / lb`)
+  - Unit price (e.g. $2.49 / lb)
+  - Total price + package (e.g. $39.99 for 5 lb)
 - **Protein basis**:
   - Per 100 g (e.g. `31 g protein / 100 g`)
   - Per serving (e.g. `25 g protein in a 32 g scoop`)
 - **Automatic calculations**:
   - Cost per gram of protein
-  - Cost per 25 g protein
   - Cost per 30 g protein (default view)
 - **Comparison table**:
-  - Sortable by price per gram, per 25g, per 30g, total price, name, brand, or store
+  - Sortable by price per gram, per 30g, total price, name, brand, or store
   - Quick search filter
   - ⭐ Favorites
 - **Settings**:
-  - Toggle default target (25g vs 30g)
   - Change currency symbol (default: `$`)
 - **Persistence**: Items are saved in your browser (LocalStorage)
 - **Demo data** loads on first run (chicken breast, whey isolate, Greek yogurt)
+
+---
+
+## 📦 Project Structure
+    index.html
+    css/
+      styles.css
+    js/
+      app.js       # app logic, event wiring, rendering
+      calc.js      # pure cost/yield calculations
+      storage.js   # LocalStorage + first-run seed
+      dom.js       # small DOM helpers
+      format.js    # money/unit formatting
+    assets/
+      icons.svg
+    reference/
+      max-thomas.com/   # (read-only) design reference, DO NOT MODIFY
+
+> The reference/max-thomas.com/ folder is design reference only.  
+> The app reads its tokens (font/colors) but never edits those files.
 
 ---
 
@@ -36,64 +54,35 @@ Use it to see whether Costco chicken, Greek yogurt, or your favorite protein pow
 - 1 oz = 28.3495 g  
 - 1 kg = 1000 g  
 
-**Per‑100g path**
-    
-    gramsTotal = convert(packageAmount, packageUnit)
-    gramsProteinTotal = gramsTotal × (proteinPer100g / 100)
-    costPerGram = priceTotal / gramsProteinTotal
-    costPer25   = costPerGram × 25
-    costPer30   = costPerGram × 30
-
-**Per‑serving path**
-    
-    servingGrams = convert(servingSizeAmount, servingSizeUnit)
-    servingsPerPackage = gramsTotal / servingGrams
-    gramsProteinTotal = servingsPerPackage × proteinPerServing
-    costPerGram = priceTotal / gramsProteinTotal
-
-**Unit‑price path (when no package size known)**
-    
-    unitPricePerGramProduct = unitPrice / gramsInUnit
-    gramsProteinPerGramProduct = (proteinPer100g / 100)  OR  (proteinPerServing / servingGrams)
+**Unit-price mode**
+    unitPricePerGramProduct = unitPrice / gramsIn(1 unitPriceUnit)
+    gramsProteinPerGramProduct =
+      - per100g: proteinPer100g / 100
+      - perServing: proteinPerServing / servingGrams
     costPerGram = unitPricePerGramProduct / gramsProteinPerGramProduct
-    costPer25 = costPerGram × 25
-    costPer30 = costPerGram × 30
+    costPer30   = costPerGram * 30
+
+**Total-price mode**
+    gramsTotal = gramsIn(packageAmount, packageUnit)
+    gramsProteinTotal =
+      - per100g: gramsTotal * (proteinPer100g / 100)
+      - perServing: (gramsTotal / servingGrams) * proteinPerServing
+    costPerGram = priceTotal / gramsProteinTotal
+    costPer30   = costPerGram * 30
 
 ---
 
 ## 🚀 Getting Started
 
-**Prerequisites**
-- Node.js (v18+ recommended)
-- npm or yarn
+Use any static server (no build step required).
 
-**Install**
-    
-    git clone https://github.com/yourname/protein-price-comparator.git
-    cd protein-price-comparator
-    npm install
+**Option A: VS Code Live Server**
+1. Install the “Live Server” extension.
+2. Right-click index.html → “Open with Live Server”.
 
-**Run (development)**
-    
-    npm run dev
-    # Open http://localhost:5173
-
-**Build (production)**
-    
-    npm run build
-    npm run preview
-
----
-
-## 📂 Project Structure
-
-    src/
-      components/   # UI pieces (Header, Controls, ItemTable, ItemForm, SettingsModal, PreviewCard)
-      hooks/        # State management (useItems, useSettings)
-      utils/        # Pure functions (units, calc, storage, format, seed)
-      types.ts      # Data models
-      App.tsx       # Root component
-      main.tsx      # Entry point
+**Option B: Python**
+    python -m http.server 5173
+Then open http://localhost:5173 in your browser.
 
 ---
 
