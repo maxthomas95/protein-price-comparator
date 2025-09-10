@@ -33,12 +33,12 @@ const focusTraps = {};
 /**
  * Initialize the application
  */
-function init() {
+async function init() {
   // Cache DOM elements
   cacheElements();
   
-  // Load data from storage
-  const loadedState = storage.load();
+  // Load data from storage (API-first; await Promise)
+  const loadedState = await storage.load();
   
   // Merge loaded state with default state, preserving UI state
   state = {
@@ -511,10 +511,10 @@ function getFilteredAndSortedItems() {
         result = (a.store || '').localeCompare(b.store || '');
         break;
       case 'quality':
-        // Handle null/undefined quality values (move to bottom)
-        const qualityA = a.quality !== null && a.quality !== undefined ? a.quality : -1;
-        const qualityB = b.quality !== null && b.quality !== undefined ? b.quality : -1;
-        result = qualityA - qualityB;
+        // Sort by quality; always move null/undefined to bottom regardless of sort direction
+        if (a.quality === null || a.quality === undefined) return 1;
+        if (b.quality === null || b.quality === undefined) return -1;
+        result = a.quality - b.quality;
         break;
       default:
         result = 0;
