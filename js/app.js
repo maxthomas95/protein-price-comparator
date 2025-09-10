@@ -228,6 +228,17 @@ function setupFormToggleListeners() {
   dom.on(elements.itemForm, 'change', 'select', () => {
     updateLivePreview();
   });
+  
+  // Quality slider sync
+  dom.on(elements.itemForm, 'input', '#item-quality-slider', (e) => {
+    const qualityInput = dom.qs('#item-quality', elements.itemForm);
+    qualityInput.value = e.target.value;
+  });
+  
+  dom.on(elements.itemForm, 'input', '#item-quality', (e) => {
+    const qualitySlider = dom.qs('#item-quality-slider', elements.itemForm);
+    qualitySlider.value = e.target.value || 5;
+  });
 }
 
 /**
@@ -339,6 +350,10 @@ function renderTableRow(item) {
     costPerTargetCell.appendChild(warningIcon);
   }
   
+  // Quality column
+  const qualityCell = dom.createEl('td', { className: 'col-quality' });
+  qualityCell.textContent = item.quality !== null && item.quality !== undefined ? item.quality : '—';
+  
   // Actions column
   const actionsCell = dom.createEl('td', { className: 'col-actions' });
   
@@ -376,6 +391,7 @@ function renderTableRow(item) {
     proteinCell,
     costPerGramCell,
     costPerTargetCell,
+    qualityCell,
     actionsCell
   );
   
@@ -494,6 +510,12 @@ function getFilteredAndSortedItems() {
       case 'store':
         result = (a.store || '').localeCompare(b.store || '');
         break;
+      case 'quality':
+        // Handle null/undefined quality values (move to bottom)
+        const qualityA = a.quality !== null && a.quality !== undefined ? a.quality : -1;
+        const qualityB = b.quality !== null && b.quality !== undefined ? b.quality : -1;
+        result = qualityA - qualityB;
+        break;
       default:
         result = 0;
     }
@@ -601,6 +623,14 @@ function fillItemForm(item) {
   dom.qs('input[name="servingSizeAmount"]', elements.itemForm).value = item.servingSizeAmount || '';
   dom.qs('select[name="servingSizeUnit"]', elements.itemForm).value = item.servingSizeUnit || 'g';
   dom.qs('input[name="proteinPerServing"]', elements.itemForm).value = item.proteinPerServing || '';
+  
+  // Set quality and notes fields
+  dom.qs('input[name="quality"]', elements.itemForm).value = item.quality !== null && item.quality !== undefined ? item.quality : '';
+  dom.qs('textarea[name="notes"]', elements.itemForm).value = item.notes || '';
+  
+  // Sync quality slider
+  const qualitySlider = dom.qs('#item-quality-slider', elements.itemForm);
+  qualitySlider.value = item.quality !== null && item.quality !== undefined ? item.quality : 5;
 }
 
 /**
@@ -667,6 +697,8 @@ function getFormData() {
     brand: dom.qs('input[name="brand"]', form).value.trim(),
     store: dom.qs('input[name="store"]', form).value.trim(),
     favorite: dom.qs('input[name="favorite"]', form).checked,
+    quality: dom.parseIntSafe(dom.qs('input[name="quality"]', form).value),
+    notes: dom.qs('textarea[name="notes"]', form).value.trim(),
     
     priceMode,
     proteinBasis

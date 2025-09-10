@@ -1,16 +1,21 @@
 /**
  * Protein Price Comparator - Storage Utilities
- * Functions for LocalStorage persistence and initial data seeding
+ * Functions for API-first persistence with LocalStorage fallback
  */
 
-// LocalStorage key
+// LocalStorage key for fallback mode
 const STORAGE_KEY = 'ppc:v1';
+const API_BASE = '/api';
 
 // Default settings
 const DEFAULT_SETTINGS = {
   currencySymbol: '$',
   targetGrams: 30
 };
+
+// State management
+let isOnlineMode = true;
+let saveDebounceTimer = null;
 
 /**
  * Generate a simple UUID
@@ -42,6 +47,8 @@ function createSeedData() {
       brand: 'Kirkland',
       store: 'Costco',
       favorite: false,
+      quality: 8,
+      notes: 'High quality lean protein',
       
       // Unit price mode
       priceMode: 'unitPrice',
@@ -58,6 +65,8 @@ function createSeedData() {
       brand: 'ON',
       store: 'Amazon',
       favorite: false,
+      quality: 9,
+      notes: 'Fast absorbing, great for post-workout',
       
       // Total price mode
       priceMode: 'totalPrice',
@@ -77,6 +86,8 @@ function createSeedData() {
       brand: 'Fage',
       store: 'Kroger',
       favorite: false,
+      quality: 7,
+      notes: 'Creamy texture, good for snacks',
       
       // Total price mode
       priceMode: 'totalPrice',
@@ -92,11 +103,10 @@ function createSeedData() {
 }
 
 /**
- * Load data from LocalStorage
- * If no data exists, seed with initial data
+ * Load data from LocalStorage fallback
  * @returns {Object} - The loaded state
  */
-export function load() {
+function loadFromLocalStorage() {
   try {
     const storedData = localStorage.getItem(STORAGE_KEY);
     
@@ -109,9 +119,6 @@ export function load() {
       items: createSeedData(),
       settings: { ...DEFAULT_SETTINGS }
     };
-    
-    // Save the initial state
-    save(initialState);
     
     return initialState;
   } catch (error) {
@@ -126,15 +133,143 @@ export function load() {
 }
 
 /**
- * Save data to LocalStorage
+ * Save data to LocalStorage fallback
  * @param {Object} state - The state to save
  */
-export function save(state) {
+function saveToLocalStorage(state) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
     console.error('Error saving data to LocalStorage:', error);
   }
+}
+
+/**
+ * Load data from API or fallback to LocalStorage
+ * @returns {Object} - The loaded state
+ */
+export async function load() {
+  try {
+    // Try to load from API first
+    const response = await fetch(`${API_BASE}/state`);
+    
+    if (!response.ok) {
+      throw new Error(`API responded with ${response.status}`);
+    }
+    
+    const serverState = await response.json();
+    isOnlineMode = true;
+    
+    // Check if we need to migrate from localStorage to server
+    const localState = loadFromLocalStorage();
+    
+    // If server has no items but local storage does, migrate to server
+    if (serverState.items.length === 0 && localState.items.length > 0) {
+      console.log('Migrating local data to server...');
+      await saveToAPI(localState);
+      return localState;
+    }
+    
+    return serverState;
+  } catch (error) {
+    console.warn('API unavailable, using offline mode:', error);
+    isOnlineMode = false;
+    
+    // Show user notification about offline mode
+    showOfflineNotification();
+    
+    return loadFromLocalStorage();
+  }
+}
+
+/**
+ * Save data to API
+ * @param {Object} state - The state to save
+ */
+async function saveToAPI(state) {
+  const response = await fetch(`${API_BASE}/state`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(state)
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API save failed with ${response.status}`);
+  }
+}
+
+/**
+ * Save data with API-first approach and localStorage fallback
+ * @param {Object} state - The state to save
+ */
+export function save(state) {
+  // Clear any pending debounced save
+  if (saveDebounceTimer) {
+    clearTimeout(saveDebounceTimer);
+  }
+  
+  // Debounce API saves to avoid too many requests
+  saveDebounceTimer = setTimeout(async () => {
+    if (isOnlineMode) {
+      try {
+        await saveToAPI(state);
+      } catch (error) {
+        console.warn('API save failed, switching to offline mode:', error);
+        isOnlineMode = false;
+        showOfflineNotification();
+        // Fall back to localStorage
+        saveToLocalStorage(state);
+      }
+    } else {
+      // Save to localStorage in offline mode
+      saveToLocalStorage(state);
+    }
+  }, 500); // 500ms debounce
+}
+
+/**
+ * Show offline notification to user
+ */
+function showOfflineNotification() {
+  // Create a simple notification banner
+  let banner = document.getElementById('offline-banner');
+  
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'offline-banner';
+    banner.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #ff9800;
+      color: white;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    `;
+    banner.textContent = 'Offline mode - Data saved locally only';
+    document.body.prepend(banner);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      if (banner && banner.parentNode) {
+        banner.parentNode.removeChild(banner);
+      }
+    }, 5000);
+  }
+}
+
+/**
+ * Check if currently in online mode
+ * @returns {boolean} - True if connected to API
+ */
+export function isOnline() {
+  return isOnlineMode;
 }
 
 /**
@@ -148,6 +283,8 @@ export function createNewItem() {
     brand: '',
     store: '',
     favorite: false,
+    quality: null,
+    notes: '',
     
     // Default to unit price mode
     priceMode: 'unitPrice',
@@ -177,6 +314,8 @@ export function duplicateItem(item) {
   return {
     ...item,
     id: generateId(),
-    name: `${item.name} (Copy)`
+    name: `${item.name} (Copy)`,
+    quality: item.quality !== null && item.quality !== undefined ? item.quality : null,
+    notes: item.notes || ''
   };
 }

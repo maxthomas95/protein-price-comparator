@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - ppc-network
+
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ppc-data:/data
+    networks:
+      - ppc-network
+    environment:
+      - PORT=3000
+
+volumes:
+  ppc-data:
+    driver: local
+
+networks:
+  ppc-network:
+    driver: bridge
