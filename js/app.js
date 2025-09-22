@@ -134,12 +134,22 @@ function setupEventListeners() {
   
   dom.on(elements.tableBody, 'click', '.btn-duplicate', (e, target) => {
     const id = target.closest('tr').dataset.id;
-    const item = state.items.find(item => item.id === id);
-    if (item) {
-      const duplicate = storage.duplicateItem(item);
-      state.items.push(duplicate);
+    const index = state.items.findIndex(i => i.id === id);
+    if (index !== -1) {
+      // Create deep copy with a new ID and name
+      const source = state.items[index];
+      const duplicate = { ...source, id: storage.generateId(), name: `Copy of ${source.name}` };
+      // Insert directly below the original
+      state.items.splice(index + 1, 0, duplicate);
+      // Persist and re-render
       storage.save(state);
       render();
+      // Open editor for the new copy and focus the name input
+      openItemDialog(duplicate);
+      setTimeout(() => {
+        const nameInput = dom.qs('input[name="name"]', elements.itemForm);
+        if (nameInput) nameInput.focus();
+      }, 10);
     }
   });
   
@@ -359,7 +369,7 @@ function renderTableRow(item) {
   
   // Edit button
   const editBtn = dom.createEl('button', {
-    className: 'btn-icon btn-action',
+    className: 'btn-icon btn-action btn-edit',
     title: 'Edit',
     type: 'button'
   });
@@ -367,7 +377,7 @@ function renderTableRow(item) {
   
   // Duplicate button
   const duplicateBtn = dom.createEl('button', {
-    className: 'btn-icon btn-action',
+    className: 'btn-icon btn-action btn-duplicate',
     title: 'Duplicate',
     type: 'button'
   });
@@ -437,6 +447,13 @@ function renderControls() {
   // Update sort direction button
   elements.sortDirBtn.textContent = state.ui.sortDir === 'asc' ? '↑' : '↓';
   elements.sortDirBtn.title = state.ui.sortDir === 'asc' ? 'Ascending' : 'Descending';
+
+  // Reactive labels for target grams
+  const target = state.settings.targetGrams;
+  const opt = dom.qs('#sort-select option[value="costPerTarget"]');
+  if (opt) opt.textContent = `$ / ${target}g`;
+  const header = dom.qs('th.col-cost-per-target[data-sort="costPerTarget"]');
+  if (header) header.textContent = `$ / ${target}g`;
 }
 
 /**
@@ -666,6 +683,12 @@ function updateLivePreview() {
   const costPerGramEl = dom.qs('.preview-cost-per-gram', previewEl);
   const costPerTargetEl = dom.qs('.preview-cost-per-target', previewEl);
   const invalidEl = dom.qs('.preview-invalid', previewEl);
+
+  // Update the preview label to reflect current target grams
+  const targetLabelEl = costPerTargetEl ? costPerTargetEl.previousElementSibling : null;
+  if (targetLabelEl) {
+    targetLabelEl.textContent = `Cost per ${state.settings.targetGrams}g of protein: `;
+  }
   
   if (derived.valid) {
     costPerGramEl.textContent = format.formatPerGram(derived.costPerGram, state.settings.currencySymbol);
