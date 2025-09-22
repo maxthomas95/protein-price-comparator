@@ -1,6 +1,9 @@
 # Protein Price Comparator
 
-Compare grocery items and protein powders by cost per gram of protein and cost per 30g. Static HTML/CSS/JS frontend with an optional Node.js API for persistence, fronted by Nginx and containerized with Docker Compose.
+Compare grocery items and protein powders by cost per gram of protein and cost per 30g. 
+
+I’ve always wanted an easy way to compare which proteins are cheaper. Sure, not all proteins are equal (something to explore in the future), but for now I wanted a simple, visual way to line up foods and powders side by side and see the cost per gram of protein — and especially what 30g of protein actually costs across different sources.
+
 
 ## Tech stack
 
