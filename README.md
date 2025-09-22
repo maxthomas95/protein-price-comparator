@@ -1,133 +1,89 @@
+# Protein Price Comparator
 
-# 🥩 Protein Price Comparator (Static HTML/CSS/JS)
+Compare grocery items and protein powders by cost per gram of protein and cost per 30g. Static HTML/CSS/JS frontend with an optional Node.js API for persistence, fronted by Nginx and containerized with Docker Compose.
 
-Compare groceries and powders by **cost per gram of protein** and $/30g**.  
-Zero dependencies. Runs from any static web server or in Docker/Portainer with Nginx.
+## Tech stack
 
-I’ve always wanted an easy way to compare which proteins are cheaper.
-Sure, not all proteins are equal (something to explore in the future), but for now I wanted a simple, visual way to line up foods and powders side by side and see the cost per gram of protein — and especially what 30g of protein actually costs across different sources.
+- Static site: HTML, CSS, vanilla JS modules ([index.html](index.html), [css/styles.css](css/styles.css), [js/app.js](js/app.js), [js/calc.js](js/calc.js), [js/format.js](js/format.js), [js/storage.js](js/storage.js), [js/dom.js](js/dom.js))
+- API: Node.js (Express + CORS) ([api/server.js](api/server.js), [api/package.json](api/package.json))
+- Reverse proxy: Nginx ([nginx.conf](nginx.conf))
+- Containerization: Dockerfiles + Compose ([Dockerfile](Dockerfile), [api/Dockerfile](api/Dockerfile), [docker-compose.yml](docker-compose.yml), [.dockerignore](.dockerignore))
 
----
+## Project structure (key files)
 
-## ✨ Features (MVP)
-- Add items via:
-  - Unit price (e.g. $2.49 / lb)
-  - Total price + package (e.g. $39.99 for 5 lb)
-- Protein basis:
-  - Per 100 g (e.g. 31 g / 100 g)
-  - Per serving (e.g. 25 g in a 32 g scoop)
-- Instant calculations:
-  - $/g and $/30g
-- Sort, search, and ⭐ favorites
-- Settings: currency symbol and default target (30g)
-- Data saved in LocalStorage (no backend)
-- Demo items on first run
+- Frontend entry: [index.html](index.html)
+- Frontend logic: [js/app.js](js/app.js), calculations in [js/calc.js](js/calc.js), persistence in [js/storage.js](js/storage.js), formatting in [js/format.js](js/format.js), DOM helpers in [js/dom.js](js/dom.js)
+- API service: [api/server.js](api/server.js) with endpoints GET /api/health, GET/PUT /api/state; npm scripts in [api/package.json](api/package.json)
+- Nginx config: [nginx.conf](nginx.conf) (serves / and proxies /api to the API service)
+- Containers and orchestration: [Dockerfile](Dockerfile) (web), [api/Dockerfile](api/Dockerfile) (API), [docker-compose.yml](docker-compose.yml)
 
----
+## Quickstart (local, without Docker)
 
-## 📦 Project Structure
-ppc/
-  dockerfile         # builds Nginx container
-  nginx.conf         # custom server config
-  index.html
-  css/
-    styles.css
-  js/
-    app.js, calc.js, storage.js, dom.js, format.js
-  assets/
-    icons.svg
+You can run the frontend alone (offline mode) or run the API as well.
 
----
+Frontend only:
+- Option A — VS Code Live Server: open [index.html](index.html) with “Open with Live Server”.
+- Option B — Python http.server:
+  ```
+  python -m http.server 5173
+  ```
+  Then open http://localhost:5173
 
-## 🧮 Formulas
-Unit conversion:
-- 1 lb = 453.592 g
-- 1 oz = 28.3495 g
-- 1 kg = 1000 g
+Note: When the API is unreachable, the app automatically switches to Offline mode and uses LocalStorage for persistence (see [js/storage.js](js/storage.js)).
 
-Unit-price mode:
-    unitPricePerGramProduct = unitPrice / gramsIn(1 unitPriceUnit)
-    gramsProteinPerGramProduct =
-      - per100g: proteinPer100g / 100
-      - perServing: proteinPerServing / servingGrams
-    costPerGram = unitPricePerGramProduct / gramsProteinPerGramProduct
-    costPer30   = costPerGram * 30
+Run the API:
+```
+cd api
+npm install
+npm start
+```
+- The API listens on http://localhost:3000 (configurable via PORT). Health check: http://localhost:3000/api/health. State endpoints: GET/PUT http://localhost:3000/api/state. Data is saved to /data/state.json on the host.
+- To use the API with the frontend without Docker, serve the frontend through a dev server that proxies /api to http://localhost:3000; otherwise the UI will remain in Offline mode.
 
-Total-price mode:
-    gramsTotal = gramsIn(packageAmount, packageUnit)
-    gramsProteinTotal =
-      - per100g: gramsTotal * (proteinPer100g / 100)
-      - perServing: (gramsTotal / servingGrams) * proteinPerServing
-    costPerGram = priceTotal / gramsProteinTotal
-    costPer30   = costPerGram * 30
+## Quickstart (Docker Compose)
 
----
+Requires Docker Desktop (Compose v2).
 
-## 🚀 Run Locally (without Docker)
+```
+docker compose up --build
+```
 
-Use any static server (no build step required).
+- Open http://localhost
+- The web container serves the static app and proxies /api to the API container per [nginx.conf](nginx.conf).
+- Published ports (from [docker-compose.yml](docker-compose.yml)): 80:80 (web), 3000:3000 (API). The API is also reachable directly at http://localhost:3000.
+- Persistent state is stored at /data inside the API container via the ppc-data volume.
 
-Option A: VS Code Live Server
-1. Install the “Live Server” extension.
-2. Right-click index.html → “Open with Live Server”.
+## Configuration
 
-Option B: Python
-    python -m http.server 5173
-Then open http://localhost:5173
+- API
+  - PORT: port to listen on (default 3000). Set via environment (see [docker-compose.yml](docker-compose.yml)); used by [api/server.js](api/server.js).
+  - Data directory: fixed to /data inside the API (see [api/server.js](api/server.js)); ensure the path is writable when running outside Docker.
+- Nginx: see [nginx.conf](nginx.conf) for the /api reverse proxy to http://api:3000/api/.
 
----
+## Development tips
 
-## 🐳 Run with Docker
+- Main UI logic: [js/app.js](js/app.js)
+- Core calculations: [js/calc.js](js/calc.js)
+- Persistence and Offline mode: [js/storage.js](js/storage.js)
+- Formatting helpers: [js/format.js](js/format.js)
+- DOM helpers: [js/dom.js](js/dom.js)
+- When running via Docker, rebuild after changes:
+  ```
+  docker compose up --build
+  ```
 
-### 1. Build & run manually
-From project root:
-    docker build -t protein-app -f ppc/dockerfile .
-    docker run -d -p 8080:80 --name protein-app protein-app
+## Changelog
 
-Then open http://localhost:8080
+See [changelog.md](changelog.md).
 
-### 2. With docker-compose
-docker-compose.yml:
-    version: "3.8"
-    services:
-      protein-app:
-        image: protein-app:latest
-        container_name: protein-app
-        ports:
-          - "8080:80"
-        restart: unless-stopped
+## Versioning
 
-Run:
-    docker compose up -d
+This project follows Semantic Versioning: https://semver.org
 
-### 3. In Portainer
-- Option A (Build from tar):
-  1. Upload the tar in Images → Build image
-  2. Dockerfile path: ./ppc/dockerfile
-  3. Tag: protein-app:latest
-  4. Deploy container: image = protein-app:latest, port mapping 8080:80
+## Contributing
 
-- Option B (Stacks):
-  1. Go to Stacks → Add stack
-  2. Paste the docker-compose.yml above
+Small PRs and bug reports are welcome. Keep changes focused and include updates to [README.md](README.md) and [changelog.md](changelog.md) when applicable.
 
----
+## License
 
-## ✅ Acceptance Checks
-- Chicken breast — $2.49/lb, 31 g / 100 g → $/g ≈ $0.0177 → $/30g ≈ $0.53
-- Whey isolate — $39.99 for 5 lb, 25 g / 32 g → $/g ≈ $0.02257 → $/30g ≈ $0.68
-- Sorting by $/30g ascending shows chicken before whey.
-- Invalid/empty inputs show “—” and prevent saving.
-
----
-
-## 🛣️ Roadmap (post-MVP)
-- Import/export items (JSON)
-- USDA FoodData Central integration
-- Price tracking over time
-- Barcode scan (mobile)
-
----
-
-## 📜 License
-MIT
+No license specified.
